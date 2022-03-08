@@ -77,18 +77,15 @@ func TestNewCmdRepos(t *testing.T) {
       --forks=2
       --good-first-issues=3
       --help-wanted-issues=4
-      --in=readme
+      --match=description,readme
       --language=language
       --license=license
-      --mirror=true
-      --org=org
+      --owner=owner
       --updated=updated
-      --repo=repo
       --size=5
       --stars=6
       --topic=topic
       --number-topics=7
-      --user=user
       --visibility=public
       `,
 			output: ReposOptions{
@@ -104,18 +101,15 @@ func TestNewCmdRepos(t *testing.T) {
 						Forks:            "2",
 						GoodFirstIssues:  "3",
 						HelpWantedIssues: "4",
-						In:               []string{"readme"},
-						Language:         []string{"language"},
+						In:               []string{"description", "readme"},
+						Language:         "language",
 						License:          []string{"license"},
-						Mirror:           &trueBool,
-						Org:              "org",
+						Org:              "owner",
 						Pushed:           "updated",
-						Repo:             "repo",
 						Size:             "5",
 						Stars:            "6",
 						Topic:            []string{"topic"},
 						Topics:           "7",
-						User:             "user",
 						Is:               "public",
 					},
 				},
@@ -182,9 +176,9 @@ func Test_ReposRun(t *testing.T) {
 						return search.RepositoriesResult{
 							IncompleteResults: false,
 							Items: []search.Repository{
-								{FullName: "test/cli", Description: "of course", Private: true, Archived: true, UpdatedAt: updatedAt},
-								{FullName: "test/cliing", Description: "wow", Fork: true, UpdatedAt: updatedAt},
-								{FullName: "cli/cli", Description: "so much", Archived: false, UpdatedAt: updatedAt},
+								{FullName: "test/cli", Description: "of course", IsPrivate: true, IsArchived: true, UpdatedAt: updatedAt, Visibility: "private"},
+								{FullName: "test/cliing", Description: "wow", IsFork: true, UpdatedAt: updatedAt, Visibility: "public"},
+								{FullName: "cli/cli", Description: "so much", IsArchived: false, UpdatedAt: updatedAt, Visibility: "internal"},
 							},
 							Total: 300,
 						}, nil
@@ -192,7 +186,7 @@ func Test_ReposRun(t *testing.T) {
 				},
 			},
 			tty:        true,
-			wantStdout: "\nShowing 3 of 300 repositories\n\ntest/cli     of course  private, archived  Feb 28, 2021\ntest/cliing  wow        public, fork       Feb 28, 2021\ncli/cli      so much    public             Feb 28, 2021\n",
+			wantStdout: "\nShowing 3 of 300 repositories\n\ntest/cli     of course  private, archived  Feb 28, 2021\ntest/cliing  wow        public, fork       Feb 28, 2021\ncli/cli      so much    internal           Feb 28, 2021\n",
 		},
 		{
 			name: "displays no results tty",
@@ -216,16 +210,16 @@ func Test_ReposRun(t *testing.T) {
 						return search.RepositoriesResult{
 							IncompleteResults: false,
 							Items: []search.Repository{
-								{FullName: "test/cli", Description: "of course", Private: true, Archived: true, UpdatedAt: updatedAt},
-								{FullName: "test/cliing", Description: "wow", Fork: true, UpdatedAt: updatedAt},
-								{FullName: "cli/cli", Description: "so much", Archived: false, UpdatedAt: updatedAt},
+								{FullName: "test/cli", Description: "of course", IsPrivate: true, IsArchived: true, UpdatedAt: updatedAt, Visibility: "private"},
+								{FullName: "test/cliing", Description: "wow", IsFork: true, UpdatedAt: updatedAt, Visibility: "public"},
+								{FullName: "cli/cli", Description: "so much", IsArchived: false, UpdatedAt: updatedAt, Visibility: "internal"},
 							},
 							Total: 300,
 						}, nil
 					},
 				},
 			},
-			wantStdout: "test/cli\tof course\tprivate, archived\t2021-02-28T12:30:00Z\ntest/cliing\twow\tpublic, fork\t2021-02-28T12:30:00Z\ncli/cli\tso much\tpublic\t2021-02-28T12:30:00Z\n",
+			wantStdout: "test/cli\tof course\tprivate, archived\t2021-02-28T12:30:00Z\ntest/cliing\twow\tpublic, fork\t2021-02-28T12:30:00Z\ncli/cli\tso much\tinternal\t2021-02-28T12:30:00Z\n",
 		},
 		{
 			name: "displays no results notty",

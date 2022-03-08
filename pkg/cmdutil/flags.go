@@ -136,7 +136,7 @@ func (e *enumMultiValue) Set(value string) error {
 			return fmt.Errorf("valid values are %s", formatValuesForUsageDocs(e.options))
 		}
 	}
-	*e.value = items
+	*e.value = append(*e.value, items...)
 	return nil
 }
 

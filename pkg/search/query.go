@@ -33,35 +33,25 @@ type Qualifiers struct {
 	HelpWantedIssues string
 	In               []string
 	Is               string
-	Language         []string
+	Language         string
 	License          []string
-	Mirror           *bool
 	Org              string
 	Pushed           string
-	Repo             string
 	Size             string
 	Stars            string
 	Topic            []string
 	Topics           string
-	User             string
 }
 
 func (q Query) String() string {
-	var all []string
-	for k, v := range q.Qualifiers.Map() {
-		all = append(all, fmt.Sprintf("%s:%s", k, quote(v)))
-	}
-	sort.Strings(all)
-	quotedKeywords := q.Keywords
-	for i, v := range quotedKeywords {
-		quotedKeywords[i] = quote(v)
-	}
-	all = append(quotedKeywords, all...)
+	qualifiers := formatQualifiers(q.Qualifiers)
+	keywords := formatKeywords(q.Keywords)
+	all := append(keywords, qualifiers...)
 	return strings.Join(all, " ")
 }
 
-func (q Qualifiers) Map() map[string]string {
-	m := map[string]string{}
+func (q Qualifiers) Map() map[string][]string {
+	m := map[string][]string{}
 	v := reflect.ValueOf(q)
 	t := reflect.TypeOf(q)
 	for i := 0; i < v.NumField(); i++ {
@@ -75,7 +65,7 @@ func (q Qualifiers) Map() map[string]string {
 				continue
 			}
 			v := reflect.Indirect(value)
-			m[key] = fmt.Sprintf("%v", v)
+			m[key] = []string{fmt.Sprintf("%v", v)}
 		case reflect.Slice:
 			if value.IsNil() {
 				continue
@@ -84,20 +74,38 @@ func (q Qualifiers) Map() map[string]string {
 			for i := 0; i < value.Len(); i++ {
 				s = append(s, fmt.Sprintf("%v", value.Index(i)))
 			}
-			m[key] = strings.Join(s, ",")
+			m[key] = s
 		default:
 			if value.IsZero() {
 				continue
 			}
-			m[key] = fmt.Sprintf("%v", value)
+			m[key] = []string{fmt.Sprintf("%v", value)}
 		}
 	}
 	return m
 }
 
-func quote(k string) string {
-	if strings.ContainsAny(k, " \"\t\r\n") {
-		return fmt.Sprintf("%q", k)
+func quote(s string) string {
+	if strings.ContainsAny(s, " \"\t\r\n") {
+		return fmt.Sprintf("%q", s)
 	}
-	return k
+	return s
+}
+
+func formatQualifiers(qs Qualifiers) []string {
+	var all []string
+	for k, vs := range qs.Map() {
+		for _, v := range vs {
+			all = append(all, fmt.Sprintf("%s:%s", k, quote(v)))
+		}
+	}
+	sort.Strings(all)
+	return all
+}
+
+func formatKeywords(ks []string) []string {
+	for i, k := range ks {
+		ks[i] = quote(k)
+	}
+	return ks
 }

@@ -7,13 +7,33 @@ import (
 )
 
 var RepositoryFields = []string{
-	"archived",
 	"createdAt",
+	"defaultBranch",
 	"description",
-	"fork",
+	"forksCount",
 	"fullName",
-	"private",
+	"hasDownloads",
+	"hasIssues",
+	"hasPages",
+	"hasProjects",
+	"hasWiki",
+	"homepage",
+	"id",
+	"isArchived",
+	"isDisabled",
+	"isFork",
+	"isPrivate",
+	"language",
+	"license",
+	"name",
+	"openIssuesCount",
+	"owner",
 	"pushedAt",
+	"size",
+	"stargazersCount",
+	"updatedAt",
+	"visibility",
+	"watchersCount",
 }
 
 type RepositoriesResult struct {
@@ -23,12 +43,9 @@ type RepositoriesResult struct {
 }
 
 type Repository struct {
-	Archived        bool      `json:"archived"`
 	CreatedAt       time.Time `json:"created_at"`
 	DefaultBranch   string    `json:"default_branch"`
 	Description     string    `json:"description"`
-	Disabled        bool      `json:"disabled"`
-	Fork            bool      `json:"fork"`
 	ForksCount      int       `json:"forks_count"`
 	FullName        string    `json:"full_name"`
 	HasDownloads    bool      `json:"has_downloads"`
@@ -38,63 +55,22 @@ type Repository struct {
 	HasWiki         bool      `json:"has_wiki"`
 	Homepage        string    `json:"homepage"`
 	ID              int64     `json:"id"`
+	IsArchived      bool      `json:"archived"`
+	IsDisabled      bool      `json:"disabled"`
+	IsFork          bool      `json:"fork"`
+	IsPrivate       bool      `json:"private"`
 	Language        string    `json:"language"`
 	License         License   `json:"license"`
 	MasterBranch    string    `json:"master_branch"`
 	Name            string    `json:"name"`
 	OpenIssuesCount int       `json:"open_issues_count"`
 	Owner           User      `json:"owner"`
-	Private         bool      `json:"private"`
 	PushedAt        time.Time `json:"pushed_at"`
 	Size            int       `json:"size"`
 	StargazersCount int       `json:"stargazers_count"`
 	UpdatedAt       time.Time `json:"updated_at"`
+	Visibility      string    `json:"visibility"`
 	WatchersCount   int       `json:"watchers_count"`
-
-	// URLs
-	ArchiveURL       string `json:"archive_url"`
-	AssigneesURL     string `json:"assignees_url"`
-	BlobsURL         string `json:"blobs_url"`
-	BranchesURL      string `json:"branches_url"`
-	CloneURL         string `json:"clone_url"`
-	CollaboratorsURL string `json:"collaborators_url"`
-	CommentsURL      string `json:"comments_url"`
-	CommitsURL       string `json:"commits_url"`
-	CompareURL       string `json:"compare_url"`
-	ContentsURL      string `json:"contents_url"`
-	ContributorsURL  string `json:"contributors_url"`
-	DeploymentsURL   string `json:"deployments_url"`
-	DownloadsURL     string `json:"downloads_url"`
-	EventsURL        string `json:"events_url"`
-	ForksURL         string `json:"forks_url"`
-	GitCommitsURL    string `json:"git_commits_url"`
-	GitRefsURL       string `json:"git_refs_url"`
-	GitTagsURL       string `json:"git_tags_url"`
-	GitURL           string `json:"git_url"`
-	HTMLURL          string `json:"html_url"`
-	HooksURL         string `json:"hooks_url"`
-	IssueCommentURL  string `json:"issue_comment_url"`
-	IssueEventsURL   string `json:"issue_events_url"`
-	IssuesURL        string `json:"issues_url"`
-	KeysURL          string `json:"keys_url"`
-	LabelsURL        string `json:"labels_url"`
-	LanguagesURL     string `json:"languages_url"`
-	MergesURL        string `json:"merges_url"`
-	MilestonesURL    string `json:"milestones_url"`
-	MirrorURL        string `json:"mirror_url"`
-	NotificationsURL string `json:"notifications_url"`
-	PullsURL         string `json:"pulls_url"`
-	ReleasesURL      string `json:"releases_url"`
-	SSHURL           string `json:"ssh_url"`
-	SVNURL           string `json:"svn_url"`
-	StargazersURL    string `json:"stargazers_url"`
-	StatusesURL      string `json:"statuses_url"`
-	SubscribersURL   string `json:"subscribers_url"`
-	SubscriptionURL  string `json:"subscription_url"`
-	TagsURL          string `json:"tags_url"`
-	TeamsURL         string `json:"teams_url"`
-	TreesURL         string `json:"trees_url"`
-	URL              string `json:"url"`
 }
 
 type License struct {
@@ -110,28 +86,29 @@ type User struct {
 	Login      string `json:"login"`
 	SiteAdmin  bool   `json:"site_admin"`
 	Type       string `json:"type"`
-
-	// URLs
-	AvatarURL         string `json:"avatar_url"`
-	EventsURL         string `json:"events_url"`
-	FollowersURL      string `json:"followers_url"`
-	FollowingURL      string `json:"following_url"`
-	GistsURL          string `json:"gists_url"`
-	HTMLURL           string `json:"html_url"`
-	OrganizationsURL  string `json:"organizations_url"`
-	ReceivedEventsURL string `json:"received_events_url"`
-	ReposURL          string `json:"repos_url"`
-	StarredURL        string `json:"starred_url"`
-	SubscriptionsURL  string `json:"subscriptions_url"`
-	URL               string `json:"url"`
 }
 
 func (repo Repository) ExportData(fields []string) map[string]interface{} {
 	v := reflect.ValueOf(repo)
 	data := map[string]interface{}{}
 	for _, f := range fields {
-		sf := fieldByName(v, f)
-		data[f] = sf.Interface()
+		switch f {
+		case "license":
+			data[f] = map[string]interface{}{
+				"key":  repo.License.Key,
+				"name": repo.License.Name,
+				"url":  repo.License.URL,
+			}
+		case "owner":
+			data[f] = map[string]interface{}{
+				"id":    repo.Owner.ID,
+				"login": repo.Owner.Login,
+				"type":  repo.Owner.Type,
+			}
+		default:
+			sf := fieldByName(v, f)
+			data[f] = sf.Interface()
+		}
 	}
 	return data
 }

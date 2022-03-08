@@ -21,17 +21,17 @@ func TestRepositoryExportData(t *testing.T) {
 	}{
 		{
 			name:   "exports requested fields",
-			fields: RepositoryFields,
+			fields: []string{"createdAt", "description", "fullName", "isArchived", "isFork", "isPrivate", "pushedAt"},
 			repo: Repository{
-				Archived:    true,
 				CreatedAt:   createdAt,
 				Description: "description",
-				Fork:        false,
 				FullName:    "cli/cli",
-				Private:     false,
+				IsArchived:  true,
+				IsFork:      false,
+				IsPrivate:   false,
 				PushedAt:    createdAt,
 			},
-			output: `{"archived":true,"createdAt":"2021-02-28T12:30:00Z","description":"description","fork":false,"fullName":"cli/cli","private":false,"pushedAt":"2021-02-28T12:30:00Z"}`,
+			output: `{"createdAt":"2021-02-28T12:30:00Z","description":"description","fullName":"cli/cli","isArchived":true,"isFork":false,"isPrivate":false,"pushedAt":"2021-02-28T12:30:00Z"}`,
 		},
 	}
 	for _, tt := range tests {
